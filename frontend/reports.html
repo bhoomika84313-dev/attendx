@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - AttendX</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="logo">
+        <div class="logo-icon">A</div>
+        <div class="logo-text">Attend<span>X</span></div>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="index.html" class="nav-link">
+                <span class="icon">D</span> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="students.html" class="nav-link">
+                <span class="icon">S</span> Students
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="courses.html" class="nav-link">
+                <span class="icon">C</span> Courses
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="attendance.html" class="nav-link">
+                <span class="icon">A</span> Attendance
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="shortage.html" class="nav-link">
+                <span class="icon">S</span> Shortage
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="reports.html" class="nav-link active">
+                <span class="icon">R</span> Reports
+            </a>
+        </li>
+    </ul>
+    <div class="sidebar-footer">
+        AttendX v1.0
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <div class="topbar animate">
+        <div>
+            <div class="page-title">Attendance Reports</div>
+            <div class="page-subtitle">
+                View and print detailed attendance reports
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="date-badge" id="currentDate"></div>
+            <button class="btn btn-outline" onclick="printReport()">
+                Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="card animate">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Filter Report</div>
+            </div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Select Student</label>
+                <select id="filterStudent">
+                    <option value="">All Students</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Select Course</label>
+                <select id="filterCourse">
+                    <option value="">All Courses</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status Filter</label>
+                <select id="filterStatus">
+                    <option value="">All Students</option>
+                    <option value="shortage">Shortage Only</option>
+                    <option value="good">Good Standing</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary"
+                    onclick="loadReport()"
+                    style="margin-top:28px;">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card blue animate">
+            <div class="stat-icon-box">ST</div>
+            <div class="stat-number" id="totalStudents">0</div>
+            <div class="stat-label">Total Records</div>
+        </div>
+        <div class="stat-card green animate">
+            <div class="stat-icon-box">OK</div>
+            <div class="stat-number" id="goodStudents">0</div>
+            <div class="stat-label">Good Standing</div>
+        </div>
+        <div class="stat-card red animate">
+            <div class="stat-icon-box">SH</div>
+            <div class="stat-number" id="shortageStudents">0</div>
+            <div class="stat-label">Shortage</div>
+        </div>
+        <div class="stat-card yellow animate">
+            <div class="stat-icon-box">AV</div>
+            <div class="stat-number" id="avgPercentage">0%</div>
+            <div class="stat-label">Average Attendance</div>
+        </div>
+    </div>
+
+    <!-- REPORT TABLE -->
+    <div class="card animate" id="reportCard">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Attendance Report</div>
+            </div>
+            <div id="reportDate"
+                style="color:var(--gray-400);
+                font-size:13px;
+                font-weight:500;">
+            </div>
+        </div>
+        <div class="table-container">
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Roll Number</th>
+                        <th>Course</th>
+                        <th>Total Classes</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Percentage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-state-title">
+                                    No report generated yet
+                                </div>
+                                <div class="empty-state-desc">
+                                    Click Generate Report to view data
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<style>
+@media print {
+    .sidebar, .topbar, .card:first-child,
+    .stats-grid, .btn {
+        display: none !important;
+    }
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    #reportCard {
+        box-shadow: none !important;
+        border: none !important;
+    }
+}
+</style>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+
+document.getElementById('currentDate').textContent =
+    new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+document.getElementById('reportDate').textContent =
+    'Generated: ' + new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+async function loadStudents() {
+    try {
+        const res = await fetch(`${API}/students`);
+        const data = await res.json();
+        const select = document.getElementById('filterStudent');
+        data.forEach(s => {
+            select.innerHTML += `
+                <option value="${s.id}">
+                    ${s.name} (${s.roll_number})
+                </option>`;
+        });
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+async function loadCourses() {
+    try {
+        const res = await fetch(`${API}/courses`);
+        const data = await res.json();
+        const select = document.getElementById('filterCourse');
+        data.forEach(c => {
+            select.innerHTML += `
+                <option value="${c.id}">
+                    ${c.course_name} (${c.course_code})
+                </option>`;
+        });
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+async function loadReport() {
+    try {
+        const res = await fetch(`${API}/attendance/report`);
+        let data = await res.json();
+
+        const filterStudent = document.getElementById('filterStudent').value;
+        const filterStatus = document.getElementById('filterStatus').value;
+
+        if (filterStudent) {
+            data = data.filter(d =>
+                d.name === document.getElementById('filterStudent')
+                .options[document.getElementById('filterStudent')
+                .selectedIndex].text.split(' (')[0]
+            );
+        }
+
+        if (filterStatus === 'shortage') {
+            data = data.filter(d => d.percentage < 75);
+        } else if (filterStatus === 'good') {
+            data = data.filter(d => d.percentage >= 75);
+        }
+
+        document.getElementById('totalStudents').textContent = data.length;
+        document.getElementById('goodStudents').textContent =
+            data.filter(d => d.percentage >= 75).length;
+        document.getElementById('shortageStudents').textContent =
+            data.filter(d => d.percentage < 75).length;
+
+        const avg = data.length > 0
+            ? (data.reduce((sum, d) =>
+                sum + parseFloat(d.percentage), 0) / data.length).toFixed(1)
+            : 0;
+        document.getElementById('avgPercentage').textContent = avg + '%';
+
+        const tbody = document.getElementById('reportTableBody');
+
+        if (data.length === 0) {
+            tbody.innerHTML = `
+                <tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-state-title">
+                            No records found
+                        </div>
+                        <div class="empty-state-desc">
+                            Try changing your filter options
+                        </div>
+                    </div>
+                </td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(d => `
+            <tr>
+                <td>
+                    <span style="font-weight:600;
+                        color:var(--gray-900);">
+                        ${d.name}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge badge-blue">
+                        ${d.roll_number}
+                    </span>
+                </td>
+                <td style="color:var(--gray-500);">
+                    ${d.course_name}
+                </td>
+                <td style="color:var(--gray-500);">
+                    ${d.total_classes}
+                </td>
+                <td>
+                    <span style="font-weight:600;
+                        color:var(--success);">
+                        ${d.present_count}
+                    </span>
+                </td>
+                <td>
+                    <span style="font-weight:600;
+                        color:var(--danger);">
+                        ${d.absent_count}
+                    </span>
+                </td>
+                <td>
+                    <span style="font-weight:700;
+                        color:${d.percentage >= 75
+                            ? 'var(--success)'
+                            : 'var(--danger)'};">
+                        ${d.percentage}%
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${d.percentage >= 75
+                        ? 'badge-success'
+                        : 'badge-danger'}">
+                        ${d.percentage >= 75
+                            ? 'Good Standing'
+                            : 'Shortage'}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+function printReport() {
+    window.print();
+}
+
+loadStudents();
+loadCourses();
+loadReport();
+</script>
+
+</body>
+</html>

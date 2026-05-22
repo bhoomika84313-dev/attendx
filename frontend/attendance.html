@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - AttendX</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .attendance-row {
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background 0.2s;
+        }
+
+        .attendance-row:hover {
+            background: var(--gray-50);
+        }
+
+        .student-number {
+            width: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-400);
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .student-roll {
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 2px;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .status-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .status-btn.present {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .status-btn.absent {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .status-btn.present.selected {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-btn.absent.selected {
+            background: var(--danger);
+            color: white;
+        }
+
+        .status-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .attendance-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            background: var(--gray-50);
+            border-bottom: 2px solid var(--gray-200);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-500);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .attendance-header .h-number {
+            width: 40px;
+        }
+
+        .attendance-header .h-name {
+            flex: 1;
+        }
+
+        .attendance-header .h-status {
+            width: 180px;
+            text-align: center;
+        }
+
+        .mark-all-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 24px;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .mark-all-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-600);
+            flex: 1;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--gray-50);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--gray-400);
+        }
+
+        .upload-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .upload-desc {
+            font-size: 13px;
+            color: var(--gray-400);
+            margin-bottom: 16px;
+        }
+
+        .upload-format {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .upload-format-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .upload-format-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .upload-format-table th {
+            background: var(--gray-100);
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
+        }
+
+        .upload-format-table td {
+            padding: 8px 12px;
+            border: 1px solid var(--gray-200);
+            color: var(--gray-600);
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="logo">
+        <div class="logo-icon">A</div>
+        <div class="logo-text">Attend<span>X</span></div>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="index.html" class="nav-link">
+                <span class="icon">D</span> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="students.html" class="nav-link">
+                <span class="icon">S</span> Students
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="courses.html" class="nav-link">
+                <span class="icon">C</span> Courses
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="attendance.html" class="nav-link active">
+                <span class="icon">A</span> Attendance
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="shortage.html" class="nav-link">
+                <span class="icon">S</span> Shortage
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="reports.html" class="nav-link">
+                <span class="icon">R</span> Reports
+            </a>
+        </li>
+    </ul>
+    <div class="sidebar-footer">
+        AttendX v1.0
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <div class="topbar animate">
+        <div>
+            <div class="page-title">Mark Attendance</div>
+            <div class="page-subtitle">
+                Record and track daily attendance
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="date-badge" id="currentDate"></div>
+        </div>
+    </div>
+
+    <!-- SELECT COURSE AND DATE -->
+    <div class="card animate">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Select Course and Date</div>
+            </div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Select Course</label>
+                <select id="courseSelect">
+                    <option value="">-- Select Course --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="attendanceDate">
+            </div>
+            <div class="form-group full-width">
+                <button class="btn btn-primary"
+                    onclick="loadAttendanceSheet()">
+                    Load Students
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ATTENDANCE SHEET -->
+    <div class="card animate" id="attendanceSheetCard"
+        style="display:none;">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Attendance Sheet</div>
+            </div>
+            <div id="courseInfo"
+                style="color:var(--gray-400);
+                font-size:13px;
+                font-weight:500;">
+            </div>
+        </div>
+
+        <div class="alert alert-success" id="successAlert">
+            Attendance submitted successfully for all students!
+        </div>
+        <div class="alert alert-error" id="errorAlert">
+            Error marking attendance. Please try again.
+        </div>
+
+        <!-- MARK ALL BAR -->
+        <div class="mark-all-bar">
+            <span class="mark-all-label">Quick Mark:</span>
+            <button class="btn btn-success"
+                onclick="markAll('present')"
+                style="padding:7px 20px; font-size:13px;">
+                All Present
+            </button>
+            <button class="btn btn-danger"
+                onclick="markAll('absent')"
+                style="padding:7px 20px; font-size:13px;">
+                All Absent
+            </button>
+        </div>
+
+        <!-- HEADER -->
+        <div class="attendance-header">
+            <div class="h-number">#</div>
+            <div class="h-name">Students</div>
+            <div class="h-status">Attendance Status</div>
+        </div>
+
+        <!-- STUDENTS LIST -->
+        <div id="attendanceBody"></div>
+
+        <!-- SUBMIT -->
+        <div style="padding: 20px 24px;">
+            <button class="btn btn-primary"
+                onclick="submitAttendance()">
+                Submit Attendance
+            </button>
+        </div>
+    </div>
+
+    <!-- UPLOAD OLD ATTENDANCE -->
+    <div class="card animate">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Upload Old Attendance</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success" id="uploadSuccess">
+            File uploaded successfully!
+        </div>
+        <div class="alert alert-error" id="uploadError">
+            Error uploading file. Please try again.
+        </div>
+
+        <div class="upload-area"
+            onclick="document.getElementById('fileInput').click()"
+            ondragover="handleDragOver(event)"
+            ondrop="handleDrop(event)">
+            <div class="upload-icon">📂</div>
+            <div class="upload-title">
+                Click to upload or drag and drop
+            </div>
+            <div class="upload-desc">
+                Supports Excel (.xlsx, .xls) and CSV files
+            </div>
+            <button class="btn btn-primary"
+                onclick="event.stopPropagation();
+                document.getElementById('fileInput').click()">
+                Choose File
+            </button>
+            <input type="file"
+                id="fileInput"
+                accept=".xlsx,.xls,.csv"
+                style="display:none"
+                onchange="handleFileSelect(event)">
+        </div>
+
+        <!-- FILE FORMAT GUIDE -->
+        <div class="upload-format">
+            <div class="upload-format-title">
+                Required File Format
+            </div>
+            <table class="upload-format-table">
+                <thead>
+                    <tr>
+                        <th>roll_number</th>
+                        <th>course_code</th>
+                        <th>date</th>
+                        <th>status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CS001</td>
+                        <td>CS101</td>
+                        <td>2026-05-22</td>
+                        <td>present</td>
+                    </tr>
+                    <tr>
+                        <td>CS002</td>
+                        <td>CS101</td>
+                        <td>2026-05-22</td>
+                        <td>absent</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SELECTED FILE INFO -->
+        <div id="fileInfo" style="display:none;
+            margin-top:16px;
+            padding:16px;
+            background:var(--gray-50);
+            border-radius:var(--radius-sm);
+            border:1px solid var(--gray-200);">
+            <div style="display:flex;
+                align-items:center;
+                justify-content:space-between;">
+                <div>
+                    <div style="font-weight:600;
+                        color:var(--gray-900);
+                        font-size:14px;"
+                        id="fileName">
+                    </div>
+                    <div style="font-size:12px;
+                        color:var(--gray-400);
+                        margin-top:4px;"
+                        id="fileSize">
+                    </div>
+                </div>
+                <button class="btn btn-primary"
+                    onclick="uploadFile()"
+                    id="uploadBtn">
+                    Upload File
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CHECK PERCENTAGE -->
+    <div class="card animate">
+        <div class="card-header">
+            <div>
+                <div class="card-title">
+                    Check Attendance Percentage
+                </div>
+            </div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Select Student</label>
+                <select id="percentageStudent">
+                    <option value="">-- Select Student --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-success"
+                    onclick="checkPercentage()"
+                    style="margin-top:28px;">
+                    Check Percentage
+                </button>
+            </div>
+        </div>
+        <div id="percentageResult"></div>
+    </div>
+
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+let allStudents = [];
+let studentStatus = {};
+let selectedFile = null;
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('attendanceDate').value = today;
+
+document.getElementById('currentDate').textContent =
+    new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+async function loadStudents() {
+    try {
+        const res = await fetch(`${API}/students`);
+        const data = await res.json();
+        allStudents = data.sort((a, b) =>
+            a.name.localeCompare(b.name));
+
+        const select = document.getElementById('percentageStudent');
+        allStudents.forEach(s => {
+            select.innerHTML += `
+                <option value="${s.id}">
+                    ${s.name} (${s.roll_number})
+                </option>`;
+        });
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+async function loadCourses() {
+    try {
+        const res = await fetch(`${API}/courses`);
+        const data = await res.json();
+        data.sort((a, b) =>
+            a.course_name.localeCompare(b.course_name));
+        const select = document.getElementById('courseSelect');
+        data.forEach(c => {
+            select.innerHTML += `
+                <option value="${c.id}">
+                    ${c.course_name} (${c.course_code})
+                </option>`;
+        });
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+function setStatus(studentId, status) {
+    studentStatus[studentId] = status;
+    const presentBtn = document.getElementById(`present_${studentId}`);
+    const absentBtn = document.getElementById(`absent_${studentId}`);
+    if (status === 'present') {
+        presentBtn.classList.add('selected');
+        absentBtn.classList.remove('selected');
+    } else {
+        absentBtn.classList.add('selected');
+        presentBtn.classList.remove('selected');
+    }
+}
+
+function markAll(status) {
+    allStudents.forEach(s => setStatus(s.id, status));
+}
+
+function loadAttendanceSheet() {
+    const course_id = document.getElementById('courseSelect').value;
+    const date = document.getElementById('attendanceDate').value;
+
+    if (!course_id || !date) {
+        alert('Please select course and date!');
+        return;
+    }
+
+    const courseSelect = document.getElementById('courseSelect');
+    const courseName = courseSelect.options[
+        courseSelect.selectedIndex].text;
+
+    document.getElementById('courseInfo').textContent =
+        courseName + ' | ' + date;
+
+    allStudents.forEach(s => {
+        studentStatus[s.id] = 'present';
+    });
+
+    const body = document.getElementById('attendanceBody');
+    body.innerHTML = allStudents.map((s, index) => `
+        <div class="attendance-row">
+            <div class="student-number">${index + 1}</div>
+            <div class="student-info">
+                <div class="student-name">${s.name}</div>
+                <div class="student-roll">${s.roll_number}</div>
+            </div>
+            <div class="status-buttons">
+                <button
+                    id="present_${s.id}"
+                    class="status-btn present selected"
+                    onclick="setStatus(${s.id}, 'present')">
+                    Present
+                </button>
+                <button
+                    id="absent_${s.id}"
+                    class="status-btn absent"
+                    onclick="setStatus(${s.id}, 'absent')">
+                    Absent
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('attendanceSheetCard').style.display = 'block';
+    document.getElementById('attendanceSheetCard').scrollIntoView({
+        behavior: 'smooth'
+    });
+}
+
+async function submitAttendance() {
+    const course_id = document.getElementById('courseSelect').value;
+    const date = document.getElementById('attendanceDate').value;
+    let success = true;
+
+    for (const s of allStudents) {
+        const status = studentStatus[s.id] || 'present';
+        try {
+            const res = await fetch(`${API}/attendance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_id: parseInt(s.id),
+                    course_id: parseInt(course_id),
+                    date,
+                    status
+                })
+            });
+            if (!res.ok) success = false;
+        } catch(e) {
+            success = false;
+        }
+    }
+
+    if (success) {
+        document.getElementById('successAlert').style.display = 'block';
+        document.getElementById('errorAlert').style.display = 'none';
+        setTimeout(() => {
+            document.getElementById('successAlert').style.display = 'none';
+        }, 3000);
+    } else {
+        document.getElementById('errorAlert').style.display = 'block';
+    }
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) showFileInfo(file);
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    const file = event.dataTransfer.files[0];
+    if (file) showFileInfo(file);
+}
+
+function showFileInfo(file) {
+    selectedFile = file;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent =
+        (file.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('fileInfo').style.display = 'block';
+}
+
+async function uploadFile() {
+    if (!selectedFile) {
+        alert('Please select a file first!');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+        const res = await fetch(`${API}/attendance/upload`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            document.getElementById('uploadSuccess').textContent =
+                data.message;
+            document.getElementById('uploadSuccess').style.display = 'block';
+            document.getElementById('uploadError').style.display = 'none';
+            document.getElementById('fileInfo').style.display = 'none';
+            selectedFile = null;
+            setTimeout(() => {
+                document.getElementById('uploadSuccess').style.display = 'none';
+            }, 5000);
+        } else {
+            document.getElementById('uploadError').textContent =
+                data.error || 'Error uploading file';
+            document.getElementById('uploadError').style.display = 'block';
+        }
+    } catch(e) {
+        document.getElementById('uploadError').style.display = 'block';
+    }
+}
+
+async function checkPercentage() {
+    const student_id = document.getElementById('percentageStudent').value;
+    if (!student_id) {
+        alert('Please select a student!');
+        return;
+    }
+
+    try {
+        const res = await fetch(
+            `${API}/attendance/percentage/${student_id}`);
+        const data = await res.json();
+        const resultDiv = document.getElementById('percentageResult');
+
+        if (data.length === 0) {
+            resultDiv.innerHTML = `
+                <div class="divider"></div>
+                <div class="empty-state">
+                    <div class="empty-state-title">
+                        No attendance records found
+                    </div>
+                    <div class="empty-state-desc">
+                        Mark attendance for this student first
+                    </div>
+                </div>`;
+            return;
+        }
+
+        resultDiv.innerHTML = `
+            <div class="divider"></div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Total Classes</th>
+                            <th>Present</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(d => `
+                            <tr>
+                                <td>
+                                    <span style="font-weight:600;
+                                        color:var(--gray-900);">
+                                        ${d.course_name}
+                                    </span>
+                                </td>
+                                <td style="color:var(--gray-500);">
+                                    ${d.total_classes}
+                                </td>
+                                <td style="color:var(--gray-500);">
+                                    ${d.present_count}
+                                </td>
+                                <td>
+                                    <span style="font-weight:700;
+                                        color:${d.percentage >= 75
+                                            ? 'var(--success)'
+                                            : 'var(--danger)'};">
+                                        ${d.percentage}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge
+                                        ${d.percentage >= 75
+                                            ? 'badge-success'
+                                            : 'badge-danger'}">
+                                        ${d.percentage >= 75
+                                            ? 'Good Standing'
+                                            : 'Shortage'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+loadStudents();
+loadCourses();
+</script>
+
+</body>
+</html>

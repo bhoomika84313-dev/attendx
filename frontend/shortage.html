@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortage - AttendX</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="logo">
+        <div class="logo-icon">A</div>
+        <div class="logo-text">Attend<span>X</span></div>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="index.html" class="nav-link">
+                <span class="icon">D</span> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="students.html" class="nav-link">
+                <span class="icon">S</span> Students
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="courses.html" class="nav-link">
+                <span class="icon">C</span> Courses
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="attendance.html" class="nav-link">
+                <span class="icon">A</span> Attendance
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="shortage.html" class="nav-link active">
+                <span class="icon">S</span> Shortage
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="reports.html" class="nav-link">
+                <span class="icon">R</span> Reports
+            </a>
+        </li>
+    </ul>
+    <div class="sidebar-footer">
+        AttendX v1.0
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <div class="topbar animate">
+        <div>
+            <div class="page-title">Shortage Alerts</div>
+            <div class="page-subtitle">
+                Students with attendance below 75%
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="date-badge" id="currentDate"></div>
+            <button class="btn btn-danger" onclick="sendAlerts()">
+                Send Email Alerts
+            </button>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card red animate">
+            <div class="stat-icon-box">SH</div>
+            <div class="stat-number" id="shortageCount">0</div>
+            <div class="stat-label">Shortage Students</div>
+        </div>
+        <div class="stat-card green animate">
+            <div class="stat-icon-box">OK</div>
+            <div class="stat-number" id="safeCount">0</div>
+            <div class="stat-label">Safe Students</div>
+        </div>
+        <div class="stat-card blue animate">
+            <div class="stat-icon-box">ST</div>
+            <div class="stat-number" id="totalCount">0</div>
+            <div class="stat-label">Total Students</div>
+        </div>
+        <div class="stat-card yellow animate">
+            <div class="stat-icon-box">AL</div>
+            <div class="stat-number" id="alertsSent">0</div>
+            <div class="stat-label">Alerts Sent</div>
+        </div>
+    </div>
+
+    <div class="alert alert-success" id="successAlert">
+        Email alerts sent successfully to all shortage students!
+    </div>
+    <div class="alert alert-error" id="errorAlert">
+        Error sending alerts. Please try again.
+    </div>
+
+    <!-- SHORTAGE TABLE -->
+    <div class="card animate">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Students Below 75%</div>
+            </div>
+            <button class="btn btn-outline" onclick="loadShortage()">
+                Refresh
+            </button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Roll Number</th>
+                        <th>Email</th>
+                        <th>Course</th>
+                        <th>Attendance %</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="shortageTable">
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-title">
+                                    Loading...
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+let alertsSentCount = 0;
+
+document.getElementById('currentDate').textContent =
+    new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+async function loadShortage() {
+    try {
+        const studentsRes = await fetch(`${API}/students`);
+        const students = await studentsRes.json();
+        document.getElementById('totalCount').textContent = students.length;
+
+        const res = await fetch(`${API}/attendance/shortage`);
+        const data = await res.json();
+
+        document.getElementById('shortageCount').textContent = data.length;
+        document.getElementById('safeCount').textContent =
+            students.length - data.length;
+
+        const tbody = document.getElementById('shortageTable');
+
+        if (data.length === 0) {
+            tbody.innerHTML = `
+                <tr><td colspan="6">
+                    <div class="empty-state">
+                        <div class="empty-state-title"
+                            style="color:var(--success);">
+                            All students have good attendance
+                        </div>
+                        <div class="empty-state-desc">
+                            No shortage alerts at this time
+                        </div>
+                    </div>
+                </td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(s => {
+            const percentage = parseFloat(s.percentage);
+            let badgeClass = 'badge-danger';
+            let statusText = 'Critical';
+            if (percentage >= 65) {
+                badgeClass = 'badge-warning';
+                statusText = 'Warning';
+            }
+            return `
+                <tr>
+                    <td>
+                        <span style="font-weight:600;
+                            color:var(--gray-900);">
+                            ${s.name}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-blue">
+                            ${s.roll_number}
+                        </span>
+                    </td>
+                    <td style="color:var(--gray-500);">
+                        ${s.email}
+                    </td>
+                    <td style="color:var(--gray-500);">
+                        ${s.course_name}
+                    </td>
+                    <td>
+                        <span style="font-weight:700;
+                            color:var(--danger);
+                            font-size:15px;">
+                            ${s.percentage}%
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${badgeClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                </tr>`;
+        }).join('');
+
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+async function sendAlerts() {
+    try {
+        const res = await fetch(`${API}/attendance/send-alerts`);
+        if (res.ok) {
+            document.getElementById('successAlert').style.display = 'block';
+            document.getElementById('errorAlert').style.display = 'none';
+            alertsSentCount++;
+            document.getElementById('alertsSent').textContent = alertsSentCount;
+            setTimeout(() => {
+                document.getElementById('successAlert').style.display = 'none';
+            }, 3000);
+        } else {
+            document.getElementById('errorAlert').style.display = 'block';
+        }
+    } catch(e) {
+        document.getElementById('errorAlert').style.display = 'block';
+    }
+}
+
+loadShortage();
+</script>
+
+</body>
+</html>
