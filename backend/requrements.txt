@@ -1,0 +1,7 @@
+flask
+flask-cors
+pymysql
+reportlab
+flask-mail
+python-dotenv
+gunicorn
