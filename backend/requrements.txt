@@ -1,7 +1,8 @@
-flask
-flask-cors
-pymysql
-reportlab
-flask-mail
-python-dotenv
-gunicorn
+flask==2.3.3
+flask-cors==4.0.0
+pymysql==1.1.0
+reportlab==4.0.4
+flask-mail==0.9.1
+python-dotenv==1.0.0
+gunicorn==21.2.0
+Werkzeug==2.3.7
